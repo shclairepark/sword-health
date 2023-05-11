@@ -21,7 +21,7 @@ The Task Management API is a software application that allows users to account f
 
 - URL: `/api/tasks/:taskId`
 - Method: `PUT`
-- Request Body: `{ summary, performedAt, technicianId }`
+- Request Body: `{ summary, performedAt, userId }`
 - Description: Updates an existing task in the database.
 
 ### List Tasks
@@ -41,13 +41,13 @@ The Task Management API is a software application that allows users to account f
 
 ## Local Dev
 
-1. Install Dependencies
+### 1. Install Dependencies
 
 ```
 npm install
 ```
 
-2. Set up the MySQL database
+### 2. Set up the MySQL database
 
 Install mysql and start mysql server [link](https://dev.mysql.com/doc/refman/5.7/en/installing.html)
 
@@ -55,7 +55,7 @@ Create database `sword_db`
 
 \*\* Please run [initialization sql](src/db/testdump.sql) to create tables and test accounts
 
-3. update .env file
+### 3. update .env file
 
 .env should have following variables
 
@@ -75,9 +75,11 @@ DB_PORT=3306
 APP_PORT=3000
 ```
 
-1. Set up the email configuration in `tasks.js` by providing your Gmail account credentials to send the notification
+### 4. Set up the notification email configuration
 
-2. Start the server
+in `tasks.js` by providing your Gmail account credentials to send the notification
+
+### 5. Start the server
 
 ```
 npm start
