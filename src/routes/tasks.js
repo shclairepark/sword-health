@@ -33,9 +33,11 @@ router.post("/", (req, res) => {
         console.error("Error executing database query:", err);
         return res.sendStatus(500);
       }
+      // Create notification
+      const notification = `The tech ${technicianId} performed the task '${summary}' on ${performedAt}`;
+      console.log(notification);
 
       // Send email notification to the manager
-      const notification = `The tech ${technicianId} performed the task '${summary}' on ${performedAt}`;
       const mailOptions = {
         from: "your-email@gmail.com",
         to: "manager-email@gmail.com",
