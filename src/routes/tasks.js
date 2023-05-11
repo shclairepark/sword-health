@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
+const utils = require("./utils");
 
 // MySQL connection configuration
 const dbConn = require("../db/connection");
@@ -19,7 +20,7 @@ const rolesArr = ["admin", "manager", "technician"];
 // API endpoint to save a new task
 router.post("/", (req, res) => {
   const { summary, performedAt, technicianId } = req.body;
-  const performedAtTS = convertUTCStringToTimestamp(performedAt);
+  const performedAtTS = utils.convertUTCStringToTimestamp(performedAt);
 
   // Save the task to the database
   const query =
@@ -61,7 +62,7 @@ router.post("/", (req, res) => {
 router.put("/:taskId", (req, res) => {
   // Extract task details from request body
   const { summary, performedAt, userId } = req.body;
-  const performedAtTS = convertUTCStringToTimestamp(performedAt);
+  const performedAtTS = utils.convertUTCStringToTimestamp(performedAt);
   const taskId = req.params.taskId;
   const currentDate = new Date();
 
@@ -79,7 +80,8 @@ router.put("/:taskId", (req, res) => {
     }
 
     const createdBy = results[0].created_by;
-    if (createdBy !== userId) {
+
+    if (parseInt(createdBy) !== parseInt(userId)) {
       // Forbidden, only the technician who performed task can access this endpoint
       return res.sendStatus(403);
     }
@@ -195,11 +197,5 @@ router.delete("/:taskId", (req, res) => {
     });
   });
 });
-
-function convertUTCStringToTimestamp(utcString) {
-  const utcDate = new Date(utcString);
-  const timestamp = utcDate.toISOString().slice(0, 19).replace("T", " ");
-  return timestamp;
-}
 
 module.exports = router;
