@@ -34,8 +34,6 @@ router.post("/", (req, res) => {
       }
 
       // Send email notification to the manager
-      // ToDo: enrich name
-      //   const notification = `The tech ${technicianName} (ID: ${technicianId}) performed the task '${summary}' on ${performedAt}`;
       const notification = `The tech ${technicianId} performed the task '${summary}' on ${performedAt}`;
       const mailOptions = {
         from: "your-email@gmail.com",

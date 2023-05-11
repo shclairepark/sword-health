@@ -1,19 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-// create express app snd setup port
+// Create express app snd setup port
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.APP_PORT || 3000;
 
-// parse requests of content-type - application/x-www-form-urlencoded
+// Parse requests with content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-// parse requests of content-type - application/json
+// Parse requests with content-type - application/json
 app.use(bodyParser.json());
-
-// Root route
-app.get("/", (_, res) => {
-  res.send("Hello World");
-});
 
 const tasks = require("./routes/tasks");
 
