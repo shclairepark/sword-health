@@ -49,18 +49,30 @@ npm install
 
 2. Set up the MySQL database and update .env file
 
+.env should have following variables
+
+```
+MYSQLDB_USER=root
+MYSQLDB_ROOT_PASSWORD=
+MYSQLDB_DATABASE=sword_db
+MYSQLDB_LOCAL_PORT=3307
+MYSQLDB_DOCKER_PORT=3306
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sword_db
+DB_PORT=3306
+
+APP_PORT=3000
+```
+
 3. Set up the email configuration in `tasks.js` by providing your Gmail account credentials to send the notification
 
 4. Start the server
 
 ```
 npm start
-```
-
-5. Run unit tests
-
-```
-npm run test
 ```
 
 ## Run the app on Docker
@@ -73,3 +85,13 @@ This will first create the docker images for mysql, tasks app and then run both 
 
 \*\* For testing purpose, five users are initially set.
 userId 3, 4, 5 have technician role and userId 2 has manager role.
+
+To tear down the images,
+
+```
+docker-compose down --rmi all
+```
+
+## Hit Endpoints
+
+Please refer [postman collection](sword-tasks.postman_collection.json) to hit the endpoints

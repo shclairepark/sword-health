@@ -36,7 +36,7 @@ describe("Task API", () => {
       .send({
         summary: "Updated task",
         performedAt: "2023-05-10T12:00:00Z",
-        technicianId: 5,
+        userId: 5,
       })
       .end((err, res) => {
         // Should return 200 status code indicating success

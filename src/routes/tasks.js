@@ -60,32 +60,52 @@ router.post("/", (req, res) => {
 // API endpoint to update a task
 router.put("/:taskId", (req, res) => {
   // Extract task details from request body
-  const { summary, performedAt, technicianId } = req.body;
+  const { summary, performedAt, userId } = req.body;
   const performedAtTS = convertUTCStringToTimestamp(performedAt);
   const taskId = req.params.taskId;
   const currentDate = new Date();
 
-  // Update the task in the database
-  const query =
-    "UPDATE tasks SET summary = ?, performed_at = ?, updated_at = ? WHERE id = ?";
-  dbConn.query(
-    query,
-    [summary, performedAtTS, currentDate, taskId],
-    (err, results) => {
-      if (err) {
-        console.error("Error executing database query:", err);
-        return res.sendStatus(500);
-      }
-
-      if (results.affectedRows === 0) {
-        // Task with the specified ID not found
-        return res.sendStatus(404);
-      }
-
-      // Send a success response
-      res.sendStatus(200);
+  // Fetch the role of the user from the database
+  const getQuery = "SELECT created_by FROM tasks WHERE id = ?";
+  dbConn.query(getQuery, [taskId], (err, results) => {
+    if (err) {
+      console.error("Error executing database query:", err);
+      return res.sendStatus(500);
     }
-  );
+
+    if (results.length === 0) {
+      // Task with the specified ID not found
+      return res.sendStatus(404);
+    }
+
+    const createdBy = results[0].created_by;
+    if (createdBy !== userId) {
+      // Forbidden, only the technician who performed task can access this endpoint
+      return res.sendStatus(403);
+    }
+
+    // Update the task in the database
+    const query =
+      "UPDATE tasks SET summary = ?, performed_at = ?, updated_at = ? WHERE id = ?";
+    dbConn.query(
+      query,
+      [summary, performedAtTS, currentDate, taskId],
+      (err, results) => {
+        if (err) {
+          console.error("Error executing database query:", err);
+          return res.sendStatus(500);
+        }
+
+        if (results.affectedRows === 0) {
+          // Task with the specified ID not found
+          return res.sendStatus(404);
+        }
+
+        // Send a success response
+        res.sendStatus(200);
+      }
+    );
+  });
 });
 
 // API endpoint to list tasks
@@ -134,6 +154,7 @@ router.get("/", (req, res) => {
 router.delete("/:taskId", (req, res) => {
   const { taskId } = req.params;
   const { userId } = req.query;
+  const currentDate = new Date();
 
   // Fetch the role of the user from the database
   const getQuery = "SELECT user_role FROM users WHERE id = ?";
@@ -156,8 +177,9 @@ router.delete("/:taskId", (req, res) => {
     }
 
     // Soft-delete the task in the database
-    const updateQuery = "UPDATE tasks SET is_deleted = 1 WHERE id = ?";
-    dbConn.query(updateQuery, [taskId], (err, results) => {
+    const updateQuery =
+      "UPDATE tasks SET is_deleted = 1, updated_at = ?, updated_by = ? WHERE id = ?";
+    dbConn.query(updateQuery, [currentDate, userId, taskId], (err, results) => {
       if (err) {
         console.error("Error executing database query:", err);
         return res.sendStatus(500);
