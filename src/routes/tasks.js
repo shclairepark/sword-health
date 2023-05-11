@@ -1,14 +1,9 @@
-"use strict";
 const express = require("express");
-const bodyParser = require("body-parser");
+const router = express.Router();
 const nodemailer = require("nodemailer");
 
-// create express app snd setup port
-const app = express();
-const port = process.env.PORT || 3000;
-
 // MySQL connection configuration
-const dbConn = require("./config/db.config");
+const dbConn = require("../db/connection");
 
 // Create a Nodemailer transporter for sending emails
 const transporter = nodemailer.createTransport({
@@ -19,20 +14,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-// parse requests of content-type - application/json
-app.use(bodyParser.json());
-
 const rolesArr = ["admin", "manager", "technician"];
 
-// Root route
-app.get("/", (_, res) => {
-  res.send("Hello World");
-});
-
 // API endpoint to save a new task
-app.post("/tasks", (req, res) => {
+router.post("/", (req, res) => {
   const { summary, performedAt, technicianId } = req.body;
   const performedAtTS = convertUTCStringToTimestamp(performedAt);
 
@@ -69,13 +54,13 @@ app.post("/tasks", (req, res) => {
         }
       })();
 
-      res.sendStatus(200);
+      res.json({ id: results.insertId });
     }
   );
 });
 
 // API endpoint to update a task
-app.put("/tasks/:taskId", (req, res) => {
+router.put("/:taskId", (req, res) => {
   // Extract task details from request body
   const { summary, performedAt, technicianId } = req.body;
   const performedAtTS = convertUTCStringToTimestamp(performedAt);
@@ -94,6 +79,11 @@ app.put("/tasks/:taskId", (req, res) => {
         return res.sendStatus(500);
       }
 
+      if (results.affectedRows === 0) {
+        // Task with the specified ID not found
+        return res.sendStatus(404);
+      }
+
       // Send a success response
       res.sendStatus(200);
     }
@@ -101,7 +91,7 @@ app.put("/tasks/:taskId", (req, res) => {
 });
 
 // API endpoint to list tasks
-app.get("/tasks", (req, res) => {
+router.get("/", (req, res) => {
   const userId = req.query.userId;
 
   // Fetch the role of the user from the database
@@ -114,12 +104,10 @@ app.get("/tasks", (req, res) => {
 
     if (results.length === 0) {
       // User with the specified ID not found
-      return res.sendStatus(404);
+      return res.sendStatus(500);
     }
 
     const userRole = results[0].user_role;
-    console.log(userRole);
-
     if (!rolesArr.includes(userRole)) {
       return res.sendStatus(403); // Forbidden
     }
@@ -145,7 +133,7 @@ app.get("/tasks", (req, res) => {
 });
 
 // API endpoint to delete a task (accessible to manager only)
-app.delete("/tasks/:taskId", (req, res) => {
+router.delete("/:taskId", (req, res) => {
   const { taskId } = req.params;
   const { userId } = req.query;
 
@@ -194,7 +182,4 @@ function convertUTCStringToTimestamp(utcString) {
   return timestamp;
 }
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
-});
+module.exports = router;
